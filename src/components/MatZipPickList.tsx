@@ -2,17 +2,49 @@ import { useEffect, useState } from "react";
 import type { MatZip } from "../types/MatZip";
 import { getMatZipPickPlace } from "../api/MatZipAPI";
 import MatZipCard from "./MatZipCard";
+import { sortPlacesByDistance } from "../utils/loc";
 
 const MatZipPickList = () => {
   const [lists, setLists] = useState<MatZip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lon: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLocation({
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+          });
+        },
+        (err) => {
+          console.error("사용자의 위치를 가져오는 데 실패했습니다: ", err);
+          setUserLocation(null);
+        }
+      );
+    }
+  }, []);
 
   useEffect(() => {
     const getMapZipList = async () => {
       try {
         const data = await getMatZipPickPlace();
-        setLists(data);
+
+        if (userLocation) {
+          const sorted = sortPlacesByDistance(
+            data,
+            userLocation.lat,
+            userLocation.lon
+          );
+          setLists(sorted);
+        } else {
+          setLists(data);
+        }
       } catch (err) {
         console.error("찜한 맛집 정보를 가져오는 데 실패했습니다: ", err);
         setError("찜한 맛집 정보를 불러오는 중 문제가 발생했습니다.");
@@ -21,7 +53,7 @@ const MatZipPickList = () => {
       }
     };
     getMapZipList();
-  }, []);
+  }, [userLocation]);
 
   if (loading) {
     return (
