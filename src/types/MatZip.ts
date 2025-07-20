@@ -11,5 +11,5 @@ export interface MatZip {
 }
 
 export interface MatZipListProps {
-  title: string;
+  places: MatZip[];
 }

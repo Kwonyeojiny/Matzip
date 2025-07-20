@@ -1,7 +1,18 @@
-const MatZipCard = () => {
+interface MatZipCardImageProps {
+  image: {
+    src: string;
+    alt: string;
+  };
+}
+
+const MatZipCard = ({ image }: MatZipCardImageProps) => {
   return (
-    <div className="flex justify-center items-center w-40 h-40 bg-gray-200">
-      <span>맛집</span>
+    <div>
+      <img
+        src={`http://localhost:3000/` + image.src}
+        alt={image.alt}
+        className="w-80 aspect-[5/3] rounded-lg"
+      />
     </div>
   );
 };
