@@ -4,7 +4,11 @@ import { getMatZipPickPlace } from "../api/MatZipAPI";
 import MatZipCard from "./MatZipCard";
 import { sortPlacesByDistance } from "../utils/loc";
 
-const MatZipPickList = () => {
+interface MatZipPickListProps {
+  refreshTrigger?: boolean;
+}
+
+const MatZipPickList = ({ refreshTrigger }: MatZipPickListProps) => {
   const [lists, setLists] = useState<MatZip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +57,7 @@ const MatZipPickList = () => {
       }
     };
     getMapZipList();
-  }, [userLocation]);
+  }, [userLocation, refreshTrigger]);
 
   if (loading) {
     return (
@@ -77,9 +81,11 @@ const MatZipPickList = () => {
     <section className="w-full p-8 bg-gray-100">
       <h2 className="pb-8 text-center">찜한 맛집</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {lists.map((list) => (
-          <MatZipCard key={list.id} image={list.image} />
-        ))}
+        {lists.map((list) =>
+          list && list.id && list.image ? (
+            <MatZipCard key={list.id} place={list} />
+          ) : null
+        )}
       </div>
     </section>
   );

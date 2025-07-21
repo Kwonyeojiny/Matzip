@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import MatZipCard from "./MatZipCard";
-import { getMatZipPlace } from "../api/MatZipAPI";
+import { getMatZipPlace, postMatZipPickPlace } from "../api/MatZipAPI";
 import type { MatZip } from "../types/MatZip";
 import { sortPlacesByDistance } from "../utils/loc";
 
-const MatZipList = () => {
+interface MatZipListProps {
+  onPickUpdate?: () => void;
+}
+
+const MatZipList = ({ onPickUpdate }: MatZipListProps) => {
   const [lists, setLists] = useState<MatZip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -12,6 +16,15 @@ const MatZipList = () => {
     lat: number;
     lon: number;
   } | null>(null);
+
+  const handlePickPlace = async (place: MatZip) => {
+    try {
+      await postMatZipPickPlace({ place });
+      onPickUpdate?.();
+    } catch (err) {
+      console.error("찜한 맛집 추가에 실패했습니다: ", err);
+    }
+  };
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -77,9 +90,11 @@ const MatZipList = () => {
     <section className="w-full p-8 bg-gray-100">
       <h2 className="pb-8 text-center">맛집 목록</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {lists.map((list) => (
-          <MatZipCard key={list.id} image={list.image} />
-        ))}
+        {lists.map((list) =>
+          list && list.id && list.image ? (
+            <MatZipCard key={list.id} place={list} onClick={handlePickPlace} />
+          ) : null
+        )}
       </div>
     </section>
   );

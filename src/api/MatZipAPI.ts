@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { MatZip } from "../types/MatZip";
 
 const baseApi = axios.create({
   baseURL: "http://localhost:3000/",
@@ -21,5 +22,16 @@ export const getMatZipPickPlace = async () => {
   } catch (error) {
     console.error("찜한 맛집 정보를 가져오는 데 실패했습니다: ", error);
     return [];
+  }
+};
+
+export const postMatZipPickPlace = async (data: { place: MatZip }) => {
+  console.log("찜한 맛집이 추가되었습니다:", data);
+  try {
+    const response = await baseApi.post("/users/places", data);
+    return response.data;
+  } catch (error) {
+    console.error("찜한 맛집 추가에 실패했습니다: ", error);
+    throw error;
   }
 };

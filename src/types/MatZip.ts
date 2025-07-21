@@ -13,3 +13,7 @@ export interface MatZip {
 export interface MatZipListProps {
   places: MatZip[];
 }
+
+export interface MatZipPickProps {
+  place: MatZip[];
+}
