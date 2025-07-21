@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import type { MatZip } from "../types/MatZip";
-import { getMatZipPickPlace } from "../api/MatZipAPI";
+import { deleteMatZipPickPlace, getMatZipPickPlace } from "../api/MatZipAPI";
 import MatZipCard from "./MatZipCard";
 import { sortPlacesByDistance } from "../utils/loc";
+import Modal from "./common/Modal";
 
 interface MatZipPickListProps {
   refreshTrigger?: boolean;
@@ -12,10 +13,26 @@ const MatZipPickList = ({ refreshTrigger }: MatZipPickListProps) => {
   const [lists, setLists] = useState<MatZip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lon: number;
   } | null>(null);
+
+  const handleDelete = async () => {
+    if (!selectedId) return;
+
+    try {
+      await deleteMatZipPickPlace(selectedId);
+      setLists((prev) => prev.filter((place) => place.id !== selectedId));
+      setShowModal(false);
+      setSelectedId(null);
+    } catch (err) {
+      console.error("찜한 맛집 삭제에 실패했습니다: ", err);
+      setError("찜한 맛집 삭제 중 문제가 발생했습니다.");
+    }
+  };
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -78,16 +95,32 @@ const MatZipPickList = ({ refreshTrigger }: MatZipPickListProps) => {
   }
 
   return (
-    <section className="w-full p-8 bg-gray-100">
-      <h2 className="pb-8 text-center">찜한 맛집</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {lists.map((list) =>
-          list && list.id && list.image ? (
-            <MatZipCard key={list.id} place={list} />
-          ) : null
-        )}
-      </div>
-    </section>
+    <>
+      <section className="w-full p-8 bg-gray-100">
+        <h2 className="pb-8 text-center">찜한 맛집</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {lists.map((list) =>
+            list && list.id && list.image ? (
+              <MatZipCard
+                key={list.id}
+                place={list}
+                onClick={() => {
+                  setSelectedId(list.id);
+                  setShowModal(true);
+                }}
+              />
+            ) : null
+          )}
+        </div>
+      </section>
+      {showModal && selectedId && (
+        <Modal
+          message="찜한 맛집을 삭제하시겠습니까?"
+          onConfirm={handleDelete}
+          onCancel={() => setShowModal(false)}
+        />
+      )}
+    </>
   );
 };
 

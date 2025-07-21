@@ -26,12 +26,21 @@ export const getMatZipPickPlace = async () => {
 };
 
 export const postMatZipPickPlace = async (data: { place: MatZip }) => {
-  console.log("찜한 맛집이 추가되었습니다:", data);
   try {
     const response = await baseApi.post("/users/places", data);
     return response.data;
   } catch (error) {
     console.error("찜한 맛집 추가에 실패했습니다: ", error);
+    throw error;
+  }
+};
+
+export const deleteMatZipPickPlace = async (id: string) => {
+  try {
+    const response = await baseApi.delete(`/users/places/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("찜한 맛집 삭제에 실패했습니다: ", error);
     throw error;
   }
 };
